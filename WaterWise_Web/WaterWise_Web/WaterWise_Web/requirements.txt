@@ -1,0 +1,10 @@
+flask
+pandas
+requests
+flask_sqlalchemy
+flask_login
+opencv-python
+pytesseract
+numpy
+
+python-dotenv

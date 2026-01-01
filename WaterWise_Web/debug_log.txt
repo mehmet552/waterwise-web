@@ -1,0 +1,10 @@
+2025-12-08 14:09:48.842199: Request received at /api/analyze_bill
+2025-12-08 14:09:48.847207: Importing CV2 and others...
+2025-12-08 14:09:50.796517: Imports successful
+2025-12-08 14:09:50.799522: Selected Tesseract Path: None
+2025-12-08 14:09:50.821087: Tesseract NOT found
+2025-12-08 16:30:10.434747: Request received at /api/analyze_bill
+2025-12-08 16:30:10.445762: Starting imports/checks...
+2025-12-08 16:30:10.597714: CV2, Numpy, Shutil, OS imported.
+2025-12-08 16:30:10.622496: Tesseract executable NOT found. Switching to SIMULATION MODE as requested.
+2025-12-08 16:30:13.242515: Simulation Mode Cost: 18.27 m3

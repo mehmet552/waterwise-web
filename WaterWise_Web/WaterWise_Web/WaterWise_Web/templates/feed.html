@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block page_title %}Topluluk Akışı{% endblock %}
+
+{% block content %}
+
+<div style="max-width: 800px; margin: 0 auto;">
+
+  <!-- Paylaşım Yapma Kartı -->
+  {% if current_user.is_authenticated %}
+  <div class="card">
+    <div style="display: flex; gap: 1rem;">
+      <div class="avatar-small" style="width: 45px; height: 45px; font-size: 1.2rem;">{{ current_user.username[0]|upper
+        }}</div>
+      <div style="flex: 1;">
+        <form method="POST" action="{{ url_for('community.create_post') }}">
+          <textarea name="content" class="form-control" rows="3"
+            placeholder="💦 Su tasarrufu ipucunu veya başarımını paylaş..."
+            style="resize: none; border: none; background: #f8fafc;" required></textarea>
+          <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+            <button type="submit" class="btn btn-primary">
+              <i class="fa-solid fa-paper-plane"></i> Paylaş
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="card" style="text-align: center; padding: 3rem;">
+    <h3>Topluluğa Katılın</h3>
+    <p>Deneyimlerinizi paylaşmak ve diğer üyelerden ilham almak için giriş yapın.</p>
+    <div style="margin-top: 20px;">
+      <a href="{{ url_for('community.login') }}" class="btn btn-primary">Giriş Yap</a>
+      <a href="{{ url_for('community.register') }}" class="btn btn-secondary">Kayıt Ol</a>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Gönderiler -->
+  <div class="feed-list">
+    {% for post in posts %}
+    <div class="card post-item">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <div class="avatar-small" style="background-color: var(--secondary);">{{ post.user.username[0]|upper }}</div>
+          <div>
+            <div style="font-weight: 600; color: var(--text-main);">{{ post.user.username }}</div>
+            <div style="font-size: 0.8rem; color: var(--text-light);">Üye</div>
+          </div>
+        </div>
+        <!-- Opsiyonel: Tarih eklenebilir -->
+      </div>
+
+      <p style="font-size: 1.05rem; margin-bottom: 1.5rem;">{{ post.content }}</p>
+
+      <div
+        style="border-top: 1px solid var(--border); padding-top: 10px; display: flex; align-items: center; gap: 15px;">
+        {% if current_user.is_authenticated %}
+        <form method="POST" action="{{ url_for('community.like_post', post_id=post.id) }}" style="display: inline;">
+          <button type="submit" class="btn btn-like {% if post.likes > 0 %}liked{% else %}unliked{% endif %}">
+            <i class="fa-solid fa-heart"></i> {{ post.likes or 0 }}
+          </button>
+        </form>
+        {% else %}
+        <span style="color: var(--text-muted);"><i class="fa-solid fa-heart"></i> {{ post.likes or 0 }} Beğeni</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+
+    {% if not posts %}
+    <div style="text-align: center; color: var(--text-light); margin-top: 50px;">
+      <i class="fa-regular fa-comments" style="font-size: 3rem; margin-bottom: 10px;"></i>
+      <p>Henüz gönderi yok. İlk paylaşımı sen yap!</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}

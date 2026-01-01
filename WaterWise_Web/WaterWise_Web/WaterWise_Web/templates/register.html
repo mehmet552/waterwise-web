@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block page_title %}Kayıt Ol{% endblock %}
+
+{% block content %}
+
+<div style="max-width: 500px; margin: 20px auto; padding: 0 20px;">
+
+  <div class="card" style="padding: 2.5rem;">
+    <h2 style="text-align: center; margin-bottom: 30px; color: var(--primary);">
+      <i class="fa-solid fa-user-plus"></i> Kayıt Ol
+    </h2>
+
+    <form method="POST" id="registerForm">
+      <div class="form-group">
+        <label for="username">Kullanıcı Adı</label>
+        <input type="text" id="username" name="username" class="form-control" placeholder="Kullanıcı adınızı oluşturun"
+          required>
+        <small style="color: var(--text-light);">En az 3 karakter</small>
+      </div>
+
+      <div class="form-group">
+        <label for="email">E-posta Adresi</label>
+        <input type="email" id="email" name="email" class="form-control" placeholder="ornek@email.com" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Şifre</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="Güçlü bir şifre seçin"
+          required minlength="6">
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Şifre Tekrarı</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" class="form-control"
+          placeholder="Şifrenizi tekrar girin" required>
+        <small id="passwordMatch" style="display: block; margin-top: 5px;"></small>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 25px;">
+        <label
+          style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-size: 0.9rem; color: var(--text-secondary);">
+          <input type="checkbox" id="terms" name="terms" required style="margin-top: 4px;">
+          <span><a href="#" style="color: var(--primary);">Kullanım koşullarını</a> okudum ve kabul ediyorum.</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" id="submitBtn">
+        <i class="fa-solid fa-check"></i> Hesap Oluştur
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 20px; font-size: 0.9rem; color: var(--text-secondary);">
+      Zaten hesabın var mı? <a href="{{ url_for('community.login') }}"
+        style="color: var(--primary); font-weight: 600; text-decoration: none;">Giriş Yap</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const passwordInput = document.getElementById('password');
+  const confirmPassword = document.getElementById('confirmPassword');
+  const passwordMatch = document.getElementById('passwordMatch');
+  const submitBtn = document.getElementById('submitBtn');
+
+  function checkMatch() {
+    if (confirmPassword.value === "") {
+      passwordMatch.textContent = "";
+      return;
+    }
+    if (passwordInput.value !== confirmPassword.value) {
+      passwordMatch.textContent = "❌ Şifreler eşleşmiyor";
+      passwordMatch.style.color = "var(--danger)";
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = "0.6";
+    } else {
+      passwordMatch.textContent = "✅ Şifreler eşleşiyor";
+      passwordMatch.style.color = "var(--success)";
+      submitBtn.disabled = false;
+      submitBtn.style.opacity = "1";
+    }
+  }
+
+  passwordInput.addEventListener('input', checkMatch);
+  confirmPassword.addEventListener('input', checkMatch);
+</script>
+
+{% endblock %}

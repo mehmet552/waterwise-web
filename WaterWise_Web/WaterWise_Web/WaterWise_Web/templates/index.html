@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block page_title %}Kontrol Paneli{% endblock %}
+
+{% block content %}
+
+<!-- Sayfa Üstü Özet Kartları -->
+<div class="dashboard-grid">
+    <!-- Hava Durumu -->
+    <div class="card weather-widget" id="weather-section">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+                <h3><i class="fa-solid fa-cloud-sun"></i> Hava Durumu</h3>
+                <div id="weather-container" style="margin-top: 10px;">
+                    <p class="loading-text">Veri alınıyor...</p>
+                </div>
+            </div>
+            <i class="fa-solid fa-sun" style="font-size: 3rem; opacity: 0.3;"></i>
+        </div>
+    </div>
+
+    <!-- Günlük Durum -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+                <h3><i class="fa-solid fa-chart-pie"></i> Bugün</h3>
+                <div class="stat-value" id="status-label">0 L</div>
+                <p id="streak-label" style="font-size: 0.9em; margin-top: 5px;">Hedef: Yükleniyor...</p>
+            </div>
+            <button id="reset-button" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;"
+                title="Sıfırla">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+        <div style="margin-top: 10px; height: 6px; background: #f1f5f9; border-radius: 10px; overflow: hidden;">
+            <div id="progress-bar" style="height: 100%; width: 0%; background: var(--primary); transition: width 0.5s;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Akıllı Özet -->
+    <div class="card">
+        <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Akıllı Analiz</h3>
+        <div style="font-size: 0.95rem; color: var(--text-secondary);">
+            <p id="summary-week-label">Veriler inceleniyor...</p>
+            <p id="summary-category-label" style="margin-top: 5px; font-weight: 500;"></p>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Sol Kolon: Tüketim Ekleme -->
+    <!-- Sol Kolon: Hesaplama ve Tüketim -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+        <!-- Fatura Çözümleme (Ters Hesap) -->
+        <div class="card">
+            <h3><i class="fa-solid fa-calculator"></i> Faturadan Tüketim Bul</h3>
+            <p>Fatura tutarını girin, tahmini su tüketiminizi öğrenin ve kaydedin.</p>
+
+            <div class="form-group">
+                <label>Fatura Tutarı (TL)</label>
+                <input type="number" id="calc-price" class="form-control" placeholder="Örn: 520">
+            </div>
+
+            <div class="form-group">
+                <label>Abone Tipi</label>
+                <select id="calc-type-rev" class="form-control">
+                    <option value="residential">Konut (Standart)</option>
+                    <option value="student">Öğrenci (%50 İndirim)</option>
+                    <option value="disabled">Engelli / Gazi (%50 İndirim)</option>
+                </select>
+            </div>
+
+            <button onclick="calculateUsageFromPrice()" class="btn btn-secondary btn-block"
+                style="background-color: var(--primary-light); color: var(--primary-dark); border:none;">
+                <i class="fa-solid fa-search"></i> Tüketimi Bul
+            </button>
+
+            <div id="rev-result"
+                style="margin-top:15px; display:none; border-top: 1px dashed var(--border); padding-top:10px;">
+                <p>Tahmini Tüketim:</p>
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary);" id="rev-usage">0 m³</div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary);" id="rev-liters">0 Litre</div>
+
+                <button onclick="addCalculatedUsage()" class="btn btn-primary btn-block" style="margin-top:10px;">
+                    <i class="fa-solid fa-plus"></i> Bunu Tüketimime Ekle
+                </button>
+            </div>
+        </div>
+
+        <!-- Tüketim Ekleme -->
+        <div class="card">
+            <h3><i class="fa-solid fa-plus-circle"></i> Tüketim Ekle</h3>
+            <div class="form-group">
+                <label for="category-select">Aktivite Türü</label>
+                <select id="category-select" class="form-control">
+                    <option value="shower">Duş (Dakika)</option>
+                    <option value="dishwasher">Bulaşık Makinesi (Yıkama)</option>
+                    <option value="washing_machine">Çamaşır Makinesi (Yıkama)</option>
+                    <option value="tap">Musluk Kullanımı (Dakika)</option>
+                    <option value="garden">Bahçe Sulama (Dakika)</option>
+                    <option value="car_wash">Araç Yıkama (Yıkama)</option>
+                    <option value="custom">Diğer / Manuel (Litre)</option>
+                </select>
+            </div>
+
+            <!-- Makine Modu Seçimi (Gizli) -->
+            <div class="form-group" id="model-selection-group"
+                style="display: none; background: #f0f9ff; padding: 10px; border-radius: 8px; border: 1px solid #bae6fd;">
+                <label for="model-select" style="color: #0369a1;"><i class="fa-solid fa-list-check"></i> Program /
+                    Verimlilik Modu</label>
+                <select id="model-select" class="form-control" style="border-color: #7dd3fc;">
+                    <!-- JS ile doldurulacak -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="liters-entry" id="amount-label">Süre (Dakika)</label>
+                <input type="number" id="liters-entry" class="form-control" placeholder="Değer girin...">
+            </div>
+            <button id="add-button" class="btn btn-primary btn-block">
+                <i class="fa-solid fa-save"></i> Kaydet
+            </button>
+        </div>
+
+        <!-- Fatura Analizi (MODEL KISMI) -->
+        <div class="card" style="border: 2px dashed var(--primary); background-color: var(--primary-light);">
+            <h3><i class="fa-solid fa-camera"></i> Yapay Zeka ile Fatura Oku</h3>
+            <p style="font-size: 0.9rem;">Su faturanızın fotoğrafını yükleyin, sistem otomatik olarak tüketimi okusun.
+            </p>
+            <input type="file" id="bill-input" accept="image/*" class="form-control"
+                style="margin-top: 10px; background: white;">
+            <button id="analyze-btn" onclick="faturaAnalizEt()" class="btn btn-primary btn-block"
+                style="margin-top: 15px;">
+                <i class="fa-solid fa-robot"></i> Faturayı Analiz Et
+            </button>
+            <div id="analysis-result" style="margin-top: 15px; font-weight: 600;"></div>
+        </div>
+    </div>
+
+    <!-- Sağ Kolon: Rapor ve Grafikler -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div class="card" id="report-card-content" style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">Tüketim Grafiği</h3>
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn btn-secondary btn-sm" onclick="changePeriod('daily')">Gün</button>
+                    <button class="btn btn-secondary btn-sm" onclick="changePeriod('weekly')">Hafta</button>
+                    <button class="btn btn-secondary btn-sm" onclick="changePeriod('monthly')">Ay</button>
+                </div>
+            </div>
+
+            <div style="height: 300px;">
+                <canvas id="dailyTrendChart"></canvas>
+            </div>
+
+            <div style="margin-top: 30px; height: 250px;">
+                <h4 style="text-align: center; margin-bottom: 15px;">Kategori Dağılımı</h4>
+                <canvas id="categoryPieChart"></canvas>
+            </div>
+
+        </div>
+
+        <!-- YENİ: Fatura Geçmişi Alanı -->
+        <div class="card" style="margin-top: 30px;">
+            <h4 style="text-align: center; margin-bottom: 15px;"><i class="fa-solid fa-file-invoice"></i> Aylık Fatura
+                Geçmişi</h4>
+            <div id="bill-history-container" style="overflow-x: auto;">
+                <table class="table" style="width: 100%; text-align: left; font-size: 0.9rem;">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Miktar</th>
+                            <th>Litre</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bill-history-body">
+                        <tr>
+                            <td colspan="3" style="text-align:center;">Yükleniyor...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <button onclick="downloadReport()" class="btn btn-secondary btn-block" style="margin-top: 20px;">
+            <i class="fa-solid fa-download"></i> Raporu İndir
+        </button>
+    </div>
+
+    <!-- Hedef Ayarı -->
+    <div class="card">
+        <h3><i class="fa-solid fa-bullseye"></i> Günlük Hedef</h3>
+        <div style="display: flex; gap: 10px; align-items: flex-end;">
+            <div style="flex: 1;">
+                <label style="font-size: 0.85rem;">Hedef (Litre)</label>
+                <input type="number" id="target-entry" class="form-control" placeholder="150">
+            </div>
+            <button id="target-button" class="btn btn-primary">Güncelle</button>
+        </div>
+    </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="/static/app.js"></script>
+
+<script>
+    // --- İÇ SAYFA SCRIPTLERI ---
+
+    // 1. FATURA ANALİZ (MODEL)
+    async function faturaAnalizEt() {
+        const fileInput = document.getElementById('bill-input');
+        const resultDiv = document.getElementById('analysis-result');
+        const btn = document.getElementById('analyze-btn');
+
+        if (!fileInput.files || fileInput.files.length === 0) {
+            Swal.fire({ icon: 'warning', title: 'Dosya Seçilmedi', text: 'Lütfen fatura fotoğrafını seçin.' });
+            return;
+        }
+
+        btn.disabled = true; btn.innerHTML = '⏳ Analiz Ediliyor...';
+        resultDiv.innerText = "Yapay zeka faturayı okuyor...";
+        resultDiv.style.color = "var(--primary)";
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        try {
+            const response = await fetch('/api/analyze_bill', { method: 'POST', body: formData });
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.fire({
+                    title: data.advice_title, icon: 'success',
+                    html: `<div style="text-align:left;">
+                    <p>🧾 Okunan: <strong>${data.message}</strong></p>
+                    <p>💧 Toplam: ${data.liters.toLocaleString()} L</p>
+                    <p>📊 Günlük Ort: ${data.daily_avg.toFixed(0)} L</p>
+                    <p class="mt-2 text-muted">"${data.advice_text}"</p></div>`,
+                    confirmButtonText: 'Kaydet', confirmButtonColor: '#0ea5e9'
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        // Faturayı 'bill' aktivitesi olarak sunucuya gönder
+                        const payload = {
+                            activity: 'bill',
+                            amount: data.liters
+                        };
+
+                        fetch('/api/add', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        })
+                            .then(r => r.json())
+                            .then(result => {
+                                if (result.success) {
+                                    Swal.fire('Kaydedildi', 'Fatura verisi "Fatura Geçmişi" altına eklendi.', 'success');
+                                    // Sayfayı yenilemeden güncellemeleri tetikle (global fonksiyonlar varsa)
+                                    if (window.updateCharts) window.updateCharts();
+                                    if (window.updateStatus) window.updateStatus();
+                                    location.reload();
+                                } else {
+                                    Swal.fire('Hata', result.message, 'error');
+                                }
+                            });
+                    }
+                });
+                resultDiv.innerText = "✅ Başarılı!"; resultDiv.style.color = "var(--success)";
+            } else {
+                Swal.fire({ icon: 'error', title: 'Okunamadı', text: data.message });
+                resultDiv.innerText = "❌ " + data.message; resultDiv.style.color = "var(--danger)";
+            }
+        } catch (error) {
+            console.error(error);
+            resultDiv.innerText = "❌ Hata";
+        } finally {
+            btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-robot"></i> Faturayı Analiz Et';
+        }
+    }
+
+    // 2. RAPOR İNDİRME
+    function downloadReport() {
+        const reportCard = document.getElementById('report-card-content');
+        html2canvas(reportCard).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'waterwise_rapor.png';
+            link.href = canvas.toDataURL();
+            link.click();
+
+            Swal.fire({
+                icon: 'success',
+                title: 'İndirildi',
+                timer: 1500,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+            });
+        });
+    }
+
+    // 3. HAVA DURUMU BAŞLATMA
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/api/weather_advice').then(r => r.json()).then(d => {
+            const div = document.getElementById('weather-container');
+            if (d.temp != "-") {
+                div.innerHTML = `<div style="font-size:1.5rem; font-weight:bold;">${d.temp}°C</div><div>${d.city}</div><div style="font-size:0.9rem; margin-top:5px; opacity:0.9;">${d.advice}</div>`;
+            } else {
+                div.innerHTML = "Bilgi alınamadı";
+            }
+        }).catch(console.error);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+
+# Environment Variables
+.env
+
+# Virtual Environment
+.venv/
+env/
+venv/
+
+# Database
+*.db
+instance/
+
+# Logs
+*.log
+debug_log.txt
+latest_ocr_log.txt

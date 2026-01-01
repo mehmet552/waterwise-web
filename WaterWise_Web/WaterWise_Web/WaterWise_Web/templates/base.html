@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WaterWise - Akıllı Su Takibi{% endblock %}</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fa-solid fa-droplet logo-icon"></i>
+                    <span>WaterWise</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' else '' }}">
+                            <i class="fa-solid fa-chart-pie"></i>
+                            <span>Panel</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('community.feed') }}"
+                            class="{{ 'active' if request.endpoint == 'community.feed' else '' }}">
+                            <i class="fa-solid fa-users"></i>
+                            <span>Topluluk</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('tips') }}" class="{{ 'active' if request.endpoint == 'tips' else '' }}">
+                            <i class="fa-solid fa-lightbulb"></i>
+                            <span>İpuçları</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="nav-divider"></div>
+
+                <ul>
+                    {% if current_user.is_authenticated %}
+                    <li>
+                        <a href="{{ url_for('community.profile') }}"
+                            class="{{ 'active' if request.endpoint == 'community.profile' else '' }}">
+                            <i class="fa-solid fa-user-gear"></i>
+                            <span>Profilim</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('community.logout') }}" class="nav-logout">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            <span>Çıkış Yap</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li>
+                        <a href="{{ url_for('community.login') }}"
+                            class="{{ 'active' if request.endpoint == 'community.login' else '' }}">
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                            <span>Giriş Yap</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('community.register') }}"
+                            class="{{ 'active' if request.endpoint == 'community.register' else '' }}">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span>Kayıt Ol</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p>&copy; 2025 WaterWise</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar (Mobile Toggle & User Info) -->
+            <header class="top-bar">
+                <button class="mobile-menu-toggle" id="mobileMenuBtn">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+
+                <h2 class="page-title">{% block page_title %}Genel Bakış{% endblock %}</h2>
+
+                <div class="user-menu">
+                    {% if current_user.is_authenticated %}
+                    <div class="user-pill">
+                        <div class="avatar-small">{{ current_user.username[0]|upper }}</div>
+                        <span class="username-text">{{ current_user.username }}</span>
+                    </div>
+                    {% else %}
+                    <a href="{{ url_for('community.login') }}" class="nav-login-btn">
+                        <i class="fa-solid fa-right-to-bracket"></i> Giriş Yap
+                    </a>
+                    {% endif %}
+                </div>
+            </header>
+
+            <div class="content-area">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Common Scripts -->
+    <script>
+        document.getElementById('mobileMenuBtn').addEventListener('click', function () {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>
